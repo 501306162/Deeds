@@ -2,25 +2,42 @@
  calculates Jacobian and harmonic Energy */
 
 template <typename TypeI>
-
-void interp3(TypeI* interp,TypeI* input,float* x1,float* y1,float* z1,int m,int n,int o,int m2,int n2,int o2,bool flag){
-
-	for(int k=0;k<o;k++){
-		for(int j=0;j<n;j++){
-			for(int i=0;i<m;i++){
+void interp3(TypeI* interp,TypeI* input,
+	float* x1,float* y1,float* z1,
+	int m,int n,int o,
+	int m2,int n2,int o2,
+	bool flag){
+	//	:warning:  interp3(warped,im1,   u1,v1,w1,  m,n,o,  m,n,o,true);
+	for(int k=0;k<o;k++){ //z
+		for(int j=0;j<n;j++){ //x
+			for(int i=0;i<m;i++){  //y
 				int x=floor(x1[i+j*m+k*m*n]); int y=floor(y1[i+j*m+k*m*n]);  int z=floor(z1[i+j*m+k*m*n]); 
-				float dx=x1[i+j*m+k*m*n]-x; float dy=y1[i+j*m+k*m*n]-y; float dz=z1[i+j*m+k*m*n]-z;
+				/*  eg:  i=4,j=3,k=2
+							
+						4+3*m+2*m*n
+						num[4][3][2]....即:第 5 行[4] ...第 4 列 [3],,,  第 3 片 [2] 
+										该位置所在元素
+				  ...从0标号...
+				*/
+				float dx=x1[i+j*m+k*m*n]-x; float dy=y1[i+j*m+k*m*n]-y; float dz=z1[i+j*m+k*m*n]-z;     // :question:...获得小数值...差..即为  点--像素点 的距离
 				
 				if(flag){
 					x+=j; y+=i; z+=k;
 				}
+				/*  插值图的[i][j][k]元素的值  :thinking:
+					min(max(y,0),m2-1) ...0-m-1范围的标号...y'=x'曲线
+						  (y+1,0)		  0-m-2				y'=x'+1
+
+				*/
 				interp[i+j*m+k*m*n]=(1.0-dx)*(1.0-dy)*(1.0-dz)*input[min(max(y,0),m2-1)+min(max(x,0),n2-1)*m2+min(max(z,0),o2-1)*m2*n2]+
 				(1.0-dx)*dy*(1.0-dz)*input[min(max(y+1,0),m2-1)+min(max(x,0),n2-1)*m2+min(max(z,0),o2-1)*m2*n2]+
 				dx*(1.0-dy)*(1.0-dz)*input[min(max(y,0),m2-1)+min(max(x+1,0),n2-1)*m2+min(max(z,0),o2-1)*m2*n2]+
 				(1.0-dx)*(1.0-dy)*dz*input[min(max(y,0),m2-1)+min(max(x,0),n2-1)*m2+min(max(z+1,0),o2-1)*m2*n2]+
+
 				dx*dy*(1.0-dz)*input[min(max(y+1,0),m2-1)+min(max(x+1,0),n2-1)*m2+min(max(z,0),o2-1)*m2*n2]+
 				(1.0-dx)*dy*dz*input[min(max(y+1,0),m2-1)+min(max(x,0),n2-1)*m2+min(max(z+1,0),o2-1)*m2*n2]+
 				dx*(1.0-dy)*dz*input[min(max(y,0),m2-1)+min(max(x+1,0),n2-1)*m2+min(max(z+1,0),o2-1)*m2*n2]+
+
 				dx*dy*dz*input[min(max(y+1,0),m2-1)+min(max(x+1,0),n2-1)*m2+min(max(z+1,0),o2-1)*m2*n2];
 			}
 		}
@@ -253,39 +270,39 @@ void consistentMapping(float* u,float* v,float* w,float* u2,float* v2,float* w2,
 	float* us2=new float[m*n*o];
 	float* vs2=new float[m*n*o];
 	float* ws2=new float[m*n*o];
-    
+	
 	for(int i=0;i<m*n*o;i++){
 		us[i]=u[i]*factor1; vs[i]=v[i]*factor1;	ws[i]=w[i]*factor1;
 		us2[i]=u2[i]*factor1; vs2[i]=v2[i]*factor1;	ws2[i]=w2[i]*factor1;
 	}
-    
-    for(int it=0;it<10;it++){
-        interp3(u,us2,us,vs,ws,m,n,o,m,n,o,true);
-        interp3(v,vs2,us,vs,ws,m,n,o,m,n,o,true);
-        interp3(w,ws2,us,vs,ws,m,n,o,m,n,o,true);
-        for(int i=0;i<m*n*o;i++){
-            u[i]=0.5*us[i]-0.5*u[i];
-            v[i]=0.5*vs[i]-0.5*v[i];
-            w[i]=0.5*ws[i]-0.5*w[i];
-            
-        }
-        interp3(u2,us,us2,vs2,ws2,m,n,o,m,n,o,true);
-        interp3(v2,vs,us2,vs2,ws2,m,n,o,m,n,o,true);
-        interp3(w2,ws,us2,vs2,ws2,m,n,o,m,n,o,true);
-        for(int i=0;i<m*n*o;i++){
-            u2[i]=0.5*us2[i]-0.5*u2[i];
-            v2[i]=0.5*vs2[i]-0.5*v2[i];
-            w2[i]=0.5*ws2[i]-0.5*w2[i];
-        }
-        
-        for(int i=0;i<m*n*o;i++){
-            us[i]=u[i]; vs[i]=v[i]; ws[i]=w[i];
-            us2[i]=u2[i]; vs2[i]=v2[i]; ws2[i]=w2[i];
-        }
-        
-    }
-    
-    
+	
+	for(int it=0;it<10;it++){
+		interp3(u,us2,us,vs,ws,m,n,o,m,n,o,true);
+		interp3(v,vs2,us,vs,ws,m,n,o,m,n,o,true);
+		interp3(w,ws2,us,vs,ws,m,n,o,m,n,o,true);
+		for(int i=0;i<m*n*o;i++){
+			u[i]=0.5*us[i]-0.5*u[i];
+			v[i]=0.5*vs[i]-0.5*v[i];
+			w[i]=0.5*ws[i]-0.5*w[i];
+			
+		}
+		interp3(u2,us,us2,vs2,ws2,m,n,o,m,n,o,true);
+		interp3(v2,vs,us2,vs2,ws2,m,n,o,m,n,o,true);
+		interp3(w2,ws,us2,vs2,ws2,m,n,o,m,n,o,true);
+		for(int i=0;i<m*n*o;i++){
+			u2[i]=0.5*us2[i]-0.5*u2[i];
+			v2[i]=0.5*vs2[i]-0.5*v2[i];
+			w2[i]=0.5*ws2[i]-0.5*w2[i];
+		}
+		
+		for(int i=0;i<m*n*o;i++){
+			us[i]=u[i]; vs[i]=v[i]; ws[i]=w[i];
+			us2[i]=u2[i]; vs2[i]=v2[i]; ws2[i]=w2[i];
+		}
+		
+	}
+	
+	
 	for(int i=0;i<m*n*o;i++){
 		u[i]*=(float)factor;
 		v[i]*=(float)factor;
@@ -295,9 +312,9 @@ void consistentMapping(float* u,float* v,float* w,float* u2,float* v2,float* w2,
 		w2[i]*=(float)factor;
 	}
 	
-    
-    delete us; delete vs; delete ws;
-    delete us2; delete vs2; delete ws2;
+	
+	delete us; delete vs; delete ws;
+	delete us2; delete vs2; delete ws2;
 }
 
 float harmonicEnergy(float* u,float* v,float* w,int m,int n,int o){

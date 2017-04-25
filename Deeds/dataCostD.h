@@ -1,8 +1,11 @@
 /* Dense (stochastic) displacement sampling (deeds)
  for similarity term computation for each node and label.
- Uses a random subsampling (defined by global variable RAND_SAMPLES)
+
+ Uses a random sub-sampling (defined by global variable RAND_SAMPLES)
  (this step is not described in MICCAI paper)
- Quantisation of label space has to be integer or 0.5 (uses trilinear upsampling)
+
+
+ Quantization of label space has to be integer or 0.5 (uses trilinear up-sampling)
 */
 
 void *dataCost(void *threadarg)
@@ -208,14 +211,15 @@ void *dataCost(void *threadarg)
 	delete []xs;
 	delete []ys;
 	delete []zs;
-    
-    return NULL;
+	
+	return NULL;
 
 }
 
-template <typename TypeW>
+template <typename TypeW> //float
 
 void warpImage(TypeW* warped,TypeW* im1,float* u1,float* v1,float* w1){
-    int m=image_m; int n=image_n; int o=image_o; int sz=m*n*o;
-    interp3(warped,im1,u1,v1,w1,m,n,o,m,n,o,true);
+	int m=image_m; int n=image_n; int o=image_o; int sz=m*n*o;
+	//   :warning: warped1=new float[m*n*o];
+	interp3(warped,im1,u1,v1,w1,m,n,o,m,n,o,true);
 }

@@ -35,7 +35,7 @@ Input volumes should have same dimensions and be in nifti-format.
 #include <vector>
 #include <algorithm>
 #include <numeric>
-#include <sys/time.h>
+#include "sys_time.h"
 #include <math.h>
 #include <inttypes.h>
 #include <pthread.h>
@@ -164,6 +164,8 @@ int main(int argc, const char * argv[])
 	}
 	
 	cout<<"calling deeds | symmetry: "<<symmetric<<" | alpha: "<<alpha<<" | metric: SAD\n";
+	
+	//:warning:
 	deeds(fixedfile,movingfile,movsegfile,outputstem,randsamp,alpha,maxlevel,s_grid,s_search,s_quant,segment,symmetric);
 	
 	

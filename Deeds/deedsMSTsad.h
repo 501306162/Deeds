@@ -13,7 +13,7 @@ float timeP,timeD; //global variables for comp. time
 
 
 
-//structs for multi-threading
+//structs for multi-threading :
 struct regulariser_data{
 	float* u1; float* v1; float* w1;
 	float* u0; float* v0; float* w0;
@@ -93,11 +93,12 @@ void warpImage(float* warped,float* im1,float* im1b,float* u1,float* v1,float* w
 #include "regularisation2T.h"
 #include "MIND-SSC.h"
 #include "dataCostD.h"
-#include "windows.h"
+#include "sys_time.h"
+#include <pthread.h>
 
 int deeds(char* fixedin,char* movingin,char* movingsegin,char* outputstem,
 		int randsamp2, float alpha,int maxlevel,int* grid_step,int* label_hw,int* label_quant,bool segment,bool symmetric) {
-	//      samples...		alpha...total_levels...	spacing...	search_radius...  step_size...		segment...		symmetric... 
+	//      samples...	alpha...    total_levels...	spacing...	search_radius...  step_size...		segment...		symmetric... 
 
 
 	//Initialise random variable
@@ -161,7 +162,8 @@ int deeds(char* fixedin,char* movingin,char* movingsegin,char* outputstem,
 	
 	int step1; int hw1; float quant1;
 	
-	//set initial flow-fields to 0; i indicates backward (inverse) transform
+	//set initial flow-fields to 0;
+	//i indicates backward (inverse) transform
 	//u is in x-direction (2nd dimension), v in y-direction (1st dim) and w in z-direction (3rd dim)
 
 	//   ------>x/u
@@ -198,13 +200,16 @@ int deeds(char* fixedin,char* movingin,char* movingsegin,char* outputstem,
 	struct mind_data mind1,mind2;
 	
 	
-	gettimeofday(&time1a, NULL);
+	gettimeofday(&time1a);
 	
 	//==========================================================================================
 	//==========================================================================================
 	float* bench=new float[6*maxlevel];
+
+
+
 	for(int level=0;level<maxlevel;level++){
-		quant1=label_quant[level];
+		quant1=label_quant[level];  // :thinking: search step-size? :eyes:  
 		
 		//calculate MIND descriptors (could be reused for further levels to save computation time)
 	   // uint64_t* im1_mind=new uint64_t[m*n*o];
@@ -253,7 +258,7 @@ int deeds(char* fixedin,char* movingin,char* movingsegin,char* outputstem,
 		int* parents2=new int[sz1];
 		primsGraph(im1,ordered2,parents2,step1);
 		
-		gettimeofday(&time1, NULL);
+		gettimeofday(&time1);
 		
 		//uint64_t* warped1_mind=new uint64_t[m*n*o];
 		//uint64_t* warped2_mind=new uint64_t[m*n*o];
@@ -265,11 +270,11 @@ int deeds(char* fixedin,char* movingin,char* movingsegin,char* outputstem,
 		//pthread_create(&thread2,NULL,quantisedMIND,(void *)&mind2);
 		//pthread_join(thread1,NULL);
 		//pthread_join(thread2,NULL);
-		gettimeofday(&time2, NULL);
+		gettimeofday(&time2);
 		float timeMIND=time2.tv_sec+time2.tv_usec/1e6-(time1.tv_sec+time1.tv_usec/1e6);
 		cout<<"Start similarity computation! \n";
 		cout<<"==================================================\n";
-		gettimeofday(&time1, NULL);
+		gettimeofday(&time1);
 		
 		//data-cost/similarity computation 4-threaded (uses plenty of memory)
 		float* costall1=new float[sz1*len3];
@@ -294,14 +299,14 @@ int deeds(char* fixedin,char* movingin,char* movingsegin,char* outputstem,
 		pthread_join( thread1b, NULL);
 		pthread_join( thread2b, NULL);
 		
-		gettimeofday(&time2, NULL);
+		gettimeofday(&time2);
 		float timeData=time2.tv_sec+time2.tv_usec/1e6-(time1.tv_sec+time1.tv_usec/1e6);
 		cout<<"\nTime for data cost: "<<timeData<<"\nSpeed: "<<(float)sz1*(float)len3*(float)RAND_SAMPLES/timeData<<" dof/s\n";
 		
 		//incremental diffusion regularisation
 		cout<<"Start regularisation on MST!\n";
 		cout<<"==================================================\n";
-		gettimeofday(&time1, NULL);
+		gettimeofday(&time1);
 		
 		reg1.u1=u1; reg1.v1=v1; reg1.w1=w1; reg1.costall=costall1;
 		reg1.u0=u0; reg1.v0=v0; reg1.w0=w0; reg1.alpha=alpha;
@@ -331,7 +336,7 @@ int deeds(char* fixedin,char* movingin,char* movingsegin,char* outputstem,
 		consistentMapping(u1,v1,w1,u1i,v1i,w1i,m1,n1,o1,step1);
 		
 		
-		gettimeofday(&time2, NULL);
+		gettimeofday(&time2);
 		float timeSmooth=time2.tv_sec+time2.tv_usec/1e6-(time1.tv_sec+time1.tv_usec/1e6);
 		cout<<"\nComputation time for smoothness terms : "<<timeSmooth<<" secs.\nSpeed: "<<(float)sz1*(float)len3/timeSmooth<<" dof/s\n";
 		
@@ -403,7 +408,7 @@ int deeds(char* fixedin,char* movingin,char* movingsegin,char* outputstem,
    
 	writeOutput(flow1,output2,sz1*3);
    
-	gettimeofday(&time2a, NULL);
+	gettimeofday(&time2a);
 	
 	timeP=(time2a.tv_sec+time2a.tv_usec/1e6-(time1a.tv_sec+time1a.tv_usec/1e6));
 	printf("Total registration time: %f secs.\n",timeP);
