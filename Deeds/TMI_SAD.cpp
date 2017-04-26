@@ -108,7 +108,7 @@ int main(int argc, const char * argv[])
 			if(argin.find(argv[k][1])==argin.end()){
 				cout<<"Invalid option: "<<argv[k]<<" use -h for help\n";
 			}
-			// :watermelon: do something...
+			// :speech_balloon: do something...
 			switch(argin[argv[k][1]]){
 				case 0: // fixed image
 					sprintf(fixedfile,"%s",argv[k+1]);
@@ -165,7 +165,7 @@ int main(int argc, const char * argv[])
 	
 	cout<<"calling deeds | symmetry: "<<symmetric<<" | alpha: "<<alpha<<" | metric: SAD\n";
 	
-	//:warning:
+	// :arrow_forward:
 	deeds(fixedfile,movingfile,movsegfile,outputstem,randsamp,alpha,maxlevel,s_grid,s_search,s_quant,segment,symmetric);
 	
 	

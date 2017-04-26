@@ -169,7 +169,7 @@ void *dataCost(void *threadarg)
 			zz+=z1;
 
 			for(int l=0;l<len4;l++){
-				if(not(boundaries)){
+				if(!(boundaries)){
 					if(subpixel){
 						xx2=max(min(xx*2+(int)xs[l],ni-1),0);
 						yy2=max(min(yy*2+(int)ys[l],mi-1),0);

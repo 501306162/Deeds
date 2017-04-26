@@ -70,7 +70,7 @@
 #include <vector>
 #include <algorithm>
 #include <numeric>
-#include <sys/time.h>
+#include "sys_time.h"
 #include <math.h>
 #include <inttypes.h>
 #include <pthread.h>

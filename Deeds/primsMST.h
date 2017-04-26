@@ -118,7 +118,7 @@ void primsGraph(float* im1,int* ordered,int* parents,int step1){
 	Edge edgeout=Edge(0.0,-1,-1);
 	Edge minedge=Edge(0.0,-1,-1);
 	float cost=0.0;
-	gettimeofday(&time1, NULL);
+	gettimeofday(&time1);
 	
 	for(int i=0;i<num_vertices-1;i++){ //run n-1 times to have all vertices added
 		//add edges of new vertex to priority queue
@@ -171,7 +171,7 @@ void primsGraph(float* im1,int* ordered,int* parents,int step1){
 		ordered[num]=i;
 	}
 
-	gettimeofday(&time2, NULL);
+	gettimeofday(&time2);
 	double timeAll=time2.tv_sec+time2.tv_usec/1e6-(time1.tv_sec+time1.tv_usec/1e6);
 	//printf("Prims algorithm with %d levels finished in %f secs.\n",maxlevel,timeAll);
 	

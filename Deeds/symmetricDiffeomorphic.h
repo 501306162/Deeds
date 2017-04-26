@@ -7,7 +7,7 @@ void interp3(TypeI* interp,TypeI* input,
 	int m,int n,int o,
 	int m2,int n2,int o2,
 	bool flag){
-	//	:warning:  interp3(warped,im1,   u1,v1,w1,  m,n,o,  m,n,o,true);
+	//	:speech_balloon: interp3(warped,im1,   u1,v1,w1,  m,n,o,  m,n,o,true);
 	for(int k=0;k<o;k++){ //z
 		for(int j=0;j<n;j++){ //x
 			for(int i=0;i<m;i++){  //y
@@ -24,7 +24,7 @@ void interp3(TypeI* interp,TypeI* input,
 				if(flag){
 					x+=j; y+=i; z+=k;
 				}
-				/*  插值图的[i][j][k]元素的值  :thinking:
+				/*  插值图的[i][j][k]元素的值  
 					min(max(y,0),m2-1) ...0--m-1范围的标号...y'=x'曲线
 						  (y+1,0)		  0--m-2				y'=x'+1
 						 
@@ -33,27 +33,28 @@ void interp3(TypeI* interp,TypeI* input,
 				     	 A--f C -H     f处于内侧...坐标a->b 为y
 						 |/	  | /						a->c  x
 						 B----E							a->d  z	
-
+												A 点对应 int 型 (x,y,z)	
 						 ===============================================
 									z
 						 俯视图:   /|\ 
-									|---------
+									D---------G
 									|  1 |2	  |
 									|(5) |(6) |
-									 ----x----      括号内表示底下那层的标号...  
+									 ----x----      括号内表示底下那层区域块的标号...  
 									|(7)4|3(8)|		x表示点....四周为A.C.G.D...等像素点
-									A----------->x	公式input前系数...由上自下分别表示区域块 
+									A---------C->x	公式input前系数...由上自下分别表示区域块体积 
 													
-													6
-													2
-													5
-													8
-													1
-													3
-													7
-													4
+													6   *A
+													2	*B
+													5	*C
+													8	*D
+													1	*E      符合体对角线相乘规则----即 A点与H点所在区域块相乘
+													3	*F
+													7	*G
+													4	*H
 						==================================================
-						由此得出该插值点的值应为多少
+						由此得出该插值点的值应为多少...具体理论见印象笔记知识点->线性插值&&双线性插值&&三线性插值
+						...下列式应该还除了该立方体的总体积....但为1,所以省略了...
 
 				*/
 				interp[i+j*m+k*m*n]=(1.0-dx)*(1.0-dy)*(1.0-dz)*input[min(max(y,0),m2-1)+min(max(x,0),n2-1)*m2+min(max(z,0),o2-1)*m2*n2]+

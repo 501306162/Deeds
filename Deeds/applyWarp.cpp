@@ -17,15 +17,14 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/time.h>
+#include "sys_time.h"
 #include <vector>
 #include <algorithm>
 #include <functional>
-#include <unistd.h>
+#include "unistd.h"
 #include <string.h>
 #include <sstream>
 #include <stdarg.h>
-#include <unistd.h>
 #include <pthread.h>
 
 using namespace std;

@@ -1,14 +1,14 @@
 
 
 void boxfilter(float* input,float* temp1,float* temp2,int hw,int m,int n,int o){
-    
+	
 	int sz=m*n*o;
 	for(int i=0;i<sz;i++){
 		temp1[i]=input[i];
 	}
 	
-	for(int k=0;k<o;k++){
-		for(int j=0;j<n;j++){
+	for (int k = 0; k < o; k++) {
+		for (int j = 0; j < n; j++) {
 			for(int i=1;i<m;i++){
 				temp1[i+j*m+k*m*n]+=temp1[(i-1)+j*m+k*m*n];
 			}
@@ -116,7 +116,7 @@ void descriptor(float* mind,float* im1,int m,int n,int o,int qs){
 	int dx[6]={+qs,+qs,-qs,+0,+qs,+0};
 	int dy[6]={+qs,-qs,+0,-qs,+0,+qs};
 	int dz[6]={0,+0,+qs,+qs,+qs,+qs};
-    
+	
 	int sx[12]={-qs,+0,-qs,+0,+0,+qs,+0,+0,+0,-qs,+0,+0};
 	int sy[12]={+0,-qs,+0,+qs,+0,+0,+0,+qs,+0,+0,+0,-qs};
 	int sz[12]={+0,+0,+0,+0,-qs,+0,-qs,+0,-qs,+0,-qs,+0};
@@ -125,10 +125,10 @@ void descriptor(float* mind,float* im1,int m,int n,int o,int qs){
 	
 	int len1=6;
 	int len2=12;
-    
-    image_d=12;
+	
+	image_d=12;
 	int sz1=m*n*o;
-    
+	
 	float* w1=new float[sz1];
 	float* sum1=new float[sz1];
 	float* noise1=new float[sz1];
@@ -147,7 +147,7 @@ void descriptor(float* mind,float* im1,int m,int n,int o,int qs){
 	for(int i=0;i<sz1*len1;i++){
 		d1[i]=0.0;
 	}
-    float* temp1=new float[sz1]; float* temp2=new float[sz1];
+	float* temp1=new float[sz1]; float* temp2=new float[sz1];
 	for(int l=0;l<len1;l++){
 		imshift(im1,w1,dx[l],dy[l],dz[l],m,n,o);
 		for(int i=0;i<sz1;i++){
@@ -158,7 +158,7 @@ void descriptor(float* mind,float* im1,int m,int n,int o,int qs){
 			d1[i+l*sz1]=w1[i];
 		}
 	}
-    delete temp1; delete temp2;
+	delete temp1; delete temp2;
 	
 	for(int l=0;l<len2;l++){
 		imshift(d1+index[l]*sz1,mind+l*sz1,sx[l],sy[l],sz[l],m,n,o);
@@ -188,17 +188,17 @@ void descriptor(float* mind,float* im1,int m,int n,int o,int qs){
 	for(int i=0;i<sz1;i++){
 		noise1[i]=min(max((float)noise1[i],(float)0.001*mean1),(float)1000.0*mean1);
 	}
-    
+	
 	//-exp/noise
 	for(int l=0;l<len2;l++){
 		for(int i=0;i<sz1;i++){
 			mind[i+l*sz1]=exp(-mind[i+l*sz1]/noise1[i]);
 		}
 	}
-    delete w1;
+	delete w1;
 	delete d1;
-    
-    
+	
+	
 	delete sum1;
 	delete noise1;
 }
@@ -208,13 +208,13 @@ void *quantisedMIND(void *threadarg)
 	struct mind_data *my_data;
 	my_data = (struct mind_data *) threadarg;
 	uint64_t* mindq=my_data->mindq;
-    float* im1=my_data->im1;
-    int qs=my_data->qs;
-    int m=image_m;
-    int n=image_n;
-    int o=image_o;
-    
-    //void quantisedMIND(uint64_t* mindq,float* im1,int m,int n,int o,int qs){
+	float* im1=my_data->im1;
+	int qs=my_data->qs;
+	int m=image_m;
+	int n=image_n;
+	int o=image_o;
+	
+	//void quantisedMIND(uint64_t* mindq,float* im1,int m,int n,int o,int qs){
 	
 	int d=12;
 	int sz=m*n*o;
@@ -222,8 +222,8 @@ void *quantisedMIND(void *threadarg)
 	float* mindf=new float[m*n*o*d];
 	
 	descriptor(mindf,im1,m,n,o,qs);
-    int val=6;
-    
+	int val=6;
+	
 	int* mindi=new int[sz*d];
 	
 	for(int i=0;i<sz*d;i++){
@@ -251,7 +251,7 @@ void *quantisedMIND(void *threadarg)
 		tabled[i]=tabled[i-1]*power;
 		
 	}
-    
+	
 	for(int i=0;i<sz;i++){
 		mindq[i]=0ULL;
 		for(int q=0;q<d;q++){
@@ -263,7 +263,7 @@ void *quantisedMIND(void *threadarg)
 	delete tablei;
 	delete mindi;
 	
-    return NULL;
+	return NULL;
 	
 }
 

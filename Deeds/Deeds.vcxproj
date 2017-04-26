@@ -96,6 +96,7 @@
     <ClInclude Include="resizeFlow.h" />
     <ClInclude Include="symmetricDiffeomorphic.h" />
     <ClInclude Include="sys_time.h" />
+    <ClInclude Include="unistd.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

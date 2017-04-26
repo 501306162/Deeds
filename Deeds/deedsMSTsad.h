@@ -209,7 +209,7 @@ int deeds(char* fixedin,char* movingin,char* movingsegin,char* outputstem,
 
 
 	for(int level=0;level<maxlevel;level++){
-		quant1=label_quant[level];  // :thinking: search step-size? :eyes:  
+		quant1=label_quant[level];  // :thinking: search step-size? 
 		
 		//calculate MIND descriptors (could be reused for further levels to save computation time)
 	   // uint64_t* im1_mind=new uint64_t[m*n*o];
@@ -227,7 +227,8 @@ int deeds(char* fixedin,char* movingin,char* movingsegin,char* outputstem,
 		struct regulariser_data reg1,reg2;
 		struct cost_data cosd1,cosd2,cosd1b,cosd2b;
 		
-		//warp both high-resolution images according
+		//warp both high-resolution images according 
+		// :white_check_mark: 实现3次线性插值
 		warpImage(warped1,im1,ux,vx,wx);
 		warpImage(warped2,im1b,uxi,vxi,wxi);
 		

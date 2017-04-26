@@ -11,20 +11,20 @@ const uint64_t h01=0x0101010101010101;
 
 int popcount_3(uint64_t x)
 {
-    x-=(x>>1)&m1;
-    x=(x&m2)+((x>>2)&m2);
-    x=(x+(x>>4))&m4;
-    return (x*h01)>>56;
+	x-=(x>>1)&m1;
+	x=(x&m2)+((x>>2)&m2);
+	x=(x+(x>>4))&m4;
+	return (x*h01)>>56;
 }
 
 unsigned char wordbits[65536];
 static int popcount32(uint32_t i)
 {
-    return (wordbits[i&0xFFFF] + wordbits[i>>16]);
+	return (wordbits[i&0xFFFF] + wordbits[i>>16]);
 }
 
 static int popcount64(uint64_t i){
-    return( wordbits[i&0xFFFF] + wordbits[(i>>16)&0xFFFF] + wordbits[(i>>32)&0xFFFF] + wordbits[i>>48]);
+	return( wordbits[i&0xFFFF] + wordbits[(i>>16)&0xFFFF] + wordbits[(i>>32)&0xFFFF] + wordbits[i>>48]);
 }
 
 void *dataCost(void *threadarg)
@@ -38,19 +38,19 @@ void *dataCost(void *threadarg)
 	int hw=my_data->hw;
 	int step1=my_data->step1;
 	float quant=my_data->quant;
-    uint64_t* fixed_mind=my_data->fixed_mind;
-    uint64_t* moving_mind=my_data->moving_mind;
-    int istart=my_data->istart;
-    int iend=my_data->iend;
+	uint64_t* fixed_mind=my_data->fixed_mind;
+	uint64_t* moving_mind=my_data->moving_mind;
+	int istart=my_data->istart;
+	int iend=my_data->iend;
 	
-    //no subpixel support when using MIND descriptors yet
+	//no subpixel support when using MIND descriptors yet
 	bool subpixel=false;
 	//if(quant==0.5)
 	//	subpixel=true;
 	
-    for(int i1=0;i1<65536;i1++){
-        //    wordbits[i1]=__builtin_popcount(i1);
-    }
+	for(int i1=0;i1<65536;i1++){
+		//    wordbits[i1]=__builtin_popcount(i1);
+	}
 	float alpha1=(float)step1/(alpha*(float)quant);
 	
 	float randv=((float)rand()/float(RAND_MAX));
@@ -73,16 +73,16 @@ void *dataCost(void *threadarg)
 	float* xs=new float[len4];
 	float* ys=new float[len4];
 	float* zs=new float[len4];
-    int* inds=new int[len4];
+	int* inds=new int[len4];
 	
 	for(int i=0;i<len;i++){
 		for(int j=0;j<len;j++){
 			for(int k=0;k<len;k++){
-                int ind1=i+j*len+k*len*len;
-                xs[i+j*len+k*len*len]=(float)((j-hw)*quant);
-                ys[i+j*len+k*len*len]=(float)((i-hw)*quant);
-                zs[i+j*len+k*len*len]=(float)((k-hw)*quant);
-                inds[ind1]=(int)(ys[ind1]+xs[ind1]*m+zs[ind1]*m*n);
+				int ind1=i+j*len+k*len*len;
+				xs[i+j*len+k*len*len]=(float)((j-hw)*quant);
+				ys[i+j*len+k*len*len]=(float)((i-hw)*quant);
+				zs[i+j*len+k*len*len]=(float)((k-hw)*quant);
+				inds[ind1]=(int)(ys[ind1]+xs[ind1]*m+zs[ind1]*m*n);
 			}
 		}
 	}
@@ -94,18 +94,18 @@ void *dataCost(void *threadarg)
 		hw2=hw*(int)quant;
 	
 	float* movingi;
-    
+	
 	int mi=m;
 	int ni=n;
 	int oi=o;
-    
-    
-    movingi=new float[sz];
-    for(int i=0;i<sz;i++){
-        movingi[i]=moving[i];
-    }
-    
-    
+	
+	
+	movingi=new float[sz];
+	for(int i=0;i<sz;i++){
+		movingi[i]=moving[i];
+	}
+	
+	
 	int samples=RAND_SAMPLES;
 	bool randommode=samples<pow(step1,3);
 	int maxsamp;
@@ -118,7 +118,7 @@ void *dataCost(void *threadarg)
 	float* cost1=new float[len4];
 	float* costcount=new float[len4];
 	int frac=(int)(sz1/25);
-    float beta1=(1.0-beta);
+	float beta1=(1.0-beta);
 	float alpha2=alpha1/(float)maxsamp;
 	int xx2,yy2,zz2;
 	for(int i=istart;i<iend;i++){
@@ -167,24 +167,24 @@ void *dataCost(void *threadarg)
 			xx+=x1;
 			yy+=y1;
 			zz+=z1;
-            int ind1=yy+xx*m+zz*m*n;
+			int ind1=yy+xx*m+zz*m*n;
 			for(int l=0;l<len4;l++){
-                int ind2;
-				if(not(boundaries)){
-                    
-                    xx2=max(min(xx+(int)(xs[l]),ni-1),0);
-                    yy2=max(min(yy+(int)(ys[l]),mi-1),0);
-                    zz2=max(min(zz+(int)(zs[l]),oi-1),0);
-                    ind2=yy2+xx2*m+zz2*m*n;
+				int ind2;
+				if(!(boundaries)){
+					
+					xx2=max(min(xx+(int)(xs[l]),ni-1),0);
+					yy2=max(min(yy+(int)(ys[l]),mi-1),0);
+					zz2=max(min(zz+(int)(zs[l]),oi-1),0);
+					ind2=yy2+xx2*m+zz2*m*n;
 				}
 				else{
 					
-                    ind2=ind1+inds[l];
+					ind2=ind1+inds[l];
 					
 				}
 				//point-wise similarity term (hamming distance of MIND descriptors)
-                cost1[l]+=popcount_3(fixed_mind[ind1]^moving_mind[ind2]);
-                
+				cost1[l]+=popcount_3(fixed_mind[ind1]^moving_mind[ind2]);
+				
 			}
 		}
 		
@@ -192,24 +192,24 @@ void *dataCost(void *threadarg)
 			costall[i+l*sz1]=0.5*alpha2*cost1[l];
 		}
 	}
-    
-    
-    
+	
+	
+	
 	delete []movingi;
-    
+	
 	delete []cost1;
 	delete []costcount;
 	delete []xs;
 	delete []ys;
 	delete []zs;
-    
-    return NULL;
-    
+	
+	return NULL;
+	
 }
 
 template <typename TypeW>
 
 void warpImage(TypeW* warped,TypeW* im1,float* u1,float* v1,float* w1){
-    int m=image_m; int n=image_n; int o=image_o; int sz=m*n*o;
-    interp3(warped,im1,u1,v1,w1,m,n,o,m,n,o,true);
+	int m=image_m; int n=image_n; int o=image_o; int sz=m*n*o;
+	interp3(warped,im1,u1,v1,w1,m,n,o,m,n,o,true);
 }
