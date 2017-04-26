@@ -42,11 +42,11 @@ Input volumes should have same dimensions and be in nifti-format.
 #include <xmmintrin.h>
 #include <pmmintrin.h>
 
-using namespace std;
+
 
 
 #include "deedsMSTsad.h"
-
+using namespace std;
 int main(int argc, const char * argv[])
 {
 	//:warning: show this part when the input arguments <4...

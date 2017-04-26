@@ -132,7 +132,7 @@ int deeds(char* fixedin,char* movingin,char* movingsegin,char* outputstem,
 	readNifti(fixedin,im1b,M,N,O,K,header);
 	readNifti(movingin,im1,M,N,O,K,header); // read and modified
 	
-	image_m=M; image_n=N; image_o=O;  // 3d dimension ‘s size
+	image_m=M; image_n=N; image_o=O;  // 3d dimension ‘s size...原始图像
 	
 	int m=image_m; int n=image_n; int o=image_o; int sz=m*n*o;
 	
@@ -161,16 +161,17 @@ int deeds(char* fixedin,char* movingin,char* movingsegin,char* outputstem,
 	}
 	
 	int step1; int hw1; float quant1;
-	
-	//set initial flow-fields to 0;
-	//i indicates backward (inverse) transform
-	//u is in x-direction (2nd dimension), v in y-direction (1st dim) and w in z-direction (3rd dim)
+/*
+	set initial flow-fields to 0;
+	i indicates backward (inverse) transform
+	u is in x-direction (2nd dimension), v in y-direction (1st dim) and w in z-direction (3rd dim)
 
-	//   ------>x/u
-	//	|
-	//	|
-	//  \/ y/v
+	   ------>x/u
+		|
+		|
+	  \/ y/v
 
+*/
 	float* ux=new float[sz]; float* vx=new float[sz]; float* wx=new float[sz];
 	float* uxi=new float[sz]; float* vxi=new float[sz]; float* wxi=new float[sz];
 
@@ -179,9 +180,14 @@ int deeds(char* fixedin,char* movingin,char* movingsegin,char* outputstem,
 		uxi[i]=0.0; vxi[i]=0.0; wxi[i]=0.0;
 	}
 
+	/* 原始图像的各维像素以及总像素
+		m...表示原始图    ux  &uxi
+		m2...表示第[0]层  u1  ...
+		m1...表示其他层   u0	...
+	*/
 	int m2,n2,o2,sz2;
 	int m1,n1,o1,sz1;
-	m2=m/grid_step[0]; n2=n/grid_step[0]; o2=o/grid_step[0];// 得到像素点个数
+	m2=m/grid_step[0]; n2=n/grid_step[0]; o2=o/grid_step[0];// 得到第[0]层像素点个数
 	sz2=m2*n2*o2;
 
 	float* u1=new float[sz2]; float* v1=new float[sz2]; float* w1=new float[sz2];
@@ -226,19 +232,26 @@ int deeds(char* fixedin,char* movingin,char* movingsegin,char* outputstem,
 		
 		struct regulariser_data reg1,reg2;
 		struct cost_data cosd1,cosd2,cosd1b,cosd2b;
-		
-		//warp both high-resolution images according 
-		// :white_check_mark: 实现3次线性插值
+		/*	
+			:white_check_mark: warp both high-resolution images according 
+				实现3次线性插值
+				第[0]层与原始图像间变换
+				i	im1b	表示fixed
+				无i	im1		表示moving
+		*/	
 		warpImage(warped1,im1,ux,vx,wx);
 		warpImage(warped2,im1b,uxi,vxi,wxi);
 		
-		step1=grid_step[level];
-		hw1=label_hw[level];
+		step1=grid_step[level];   //spacing
+		hw1=label_hw[level];		//search-radius
 		
-		int len3=pow(hw1*2+1,3);
+		// pow(x,y); 用来计算x^y
+		int len3=pow(hw1*2+1,3);   //(2r+1)^3
 		m1=m/step1; n1=n/step1; o1=o/step1; sz1=m1*n1*o1;
-		
-		//resize flow from u1 to current scale (grid spacing)
+		/*
+			:white_check_mark:	resize flow from u1 to current scale (grid spacing)
+				当前层与 上一层(初始为[0]) 图像间变换...获得当前层插值结果
+		*/
 		float* u0=new float[sz1]; float* v0=new float[sz1]; float* w0=new float[sz1];
 		float* u0i=new float[sz1]; float* v0i=new float[sz1]; float* w0i=new float[sz1];
 		upsampleDeformations2(u0,v0,w0,u1,v1,w1,m1,n1,o1,m2,n2,o2);
@@ -248,10 +261,18 @@ int deeds(char* fixedin,char* movingin,char* movingsegin,char* outputstem,
 		cout<<"Level "<<level<<" grid="<<step1<<" with sizes: "<<m1<<"x"<<n1<<"x"<<o1<<" hw="<<hw1<<" quant="<<quant1<<"\n";
 		cout<<"==========================================================\n";
 		
+		
+		//	将当前层设为  上一层
+		
 		u1=new float[sz1]; v1=new float[sz1]; w1=new float[sz1];
 		u1i=new float[sz1]; v1i=new float[sz1]; w1i=new float[sz1];
 		
-		//Minimum-spanning-tree
+		/*	
+			:ballot_box_with_check:
+				Minimum-spanning-tree
+				im1b	1	表示fixed
+				im1		2	表示moving
+		*/
 		int* ordered1=new int[sz1];
 		int* parents1=new int[sz1];
 		primsGraph(im1b,ordered1,parents1,step1);

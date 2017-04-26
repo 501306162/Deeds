@@ -91,7 +91,7 @@ int main (int argc, char * const argv[]) {
 	
 
 	float* im1;
-    float* second;
+	float* second;
 	int M,N,O;
 	char* header;
 	
@@ -115,11 +115,11 @@ int main (int argc, char * const argv[]) {
 		u1[i]=flow[i]; v1[i]=flow[i+sz1]; w1[i]=flow[i+sz1*2];
 	}
 	
-    readNifti(argv[2],second,M,N,O,header);
+	readNifti(argv[2],second,M,N,O,header);
 
 	readNifti(outputdef,im1,M,N,O,header);
 	
-    
+	
 	image_m=M; image_n=N; image_o=O;
 	
 	int m=image_m; int n=image_n; int o=image_o; int sz=m*n*o;
@@ -133,8 +133,8 @@ int main (int argc, char * const argv[]) {
 	
 	upsampleDeformations2(ux,vx,wx,u1,v1,w1,m,n,o,m1,n1,o1);
    
-    float* warped=new float[sz];
-    warpImage(warped,second,im1,ux,vx,wx);
+	float* warped=new float[sz];
+	warpImage(warped,second,im1,ux,vx,wx);
 
 	
 	writeNifti(outputs,warped,header,m*n*o);

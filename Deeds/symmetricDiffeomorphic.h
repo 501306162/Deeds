@@ -1,13 +1,19 @@
 /* several functions to interpolate and symmetrise deformations (as well as make them diffeomorphic)
  calculates Jacobian and harmonic Energy */
 
-template <typename TypeI>
+
+ /*	:speech_balloon:		函数实现3线性插值
+
+			interp3(warped,im1,   u1,v1,w1,  m,n,o,  m,n,o,true);   第[0]层与原始图像间变换
+			interp3(u1,u0, x1,y1,z1, m,n,o, m2,n2,o2,false);	    当前层 与第[0]层 间变换		
+
+ */
+ template <typename TypeI>
 void interp3(TypeI* interp,TypeI* input,
-	float* x1,float* y1,float* z1,
-	int m,int n,int o,
-	int m2,int n2,int o2,
-	bool flag){
-	//	:speech_balloon: interp3(warped,im1,   u1,v1,w1,  m,n,o,  m,n,o,true);
+				float* x1,float* y1,float* z1,
+					int m,int n,int o,
+					int m2,int n2,int o2,
+								bool flag){
 	for(int k=0;k<o;k++){ //z
 		for(int j=0;j<n;j++){ //x
 			for(int i=0;i<m;i++){  //y
@@ -98,35 +104,57 @@ void filter1(float* imagein,float* imageout,int m,int n,int o,float* filter,int 
 	}
 }
 
+/*		:speech_balloon:		
+				upsampleDeformations2(u0,v0,w0,  u1,v1,w1,  m1,n1,o1,  m2,n2,o2);
+		
+				上一层(初始为[0]):	u1...像素数组			<-> m2 x方向像素个数
+				当前层:				u0...像素数组			<-> m1 x方向像素个数	
+*/
 
-void upsampleDeformations2(float* u1,float* v1,float* w1,float* u0,float* v0,float* w0,int m,int n,int o,int m2,int n2,int o2){
-	
-	
+
+/*		:speech_balloon:		函数实现当前层的各维像素数组的 3线性插值
+				
+				函数中使用:
+
+				上一层(初始为[0])	u0...像素数组			<-> m2 x方向像素个数
+				当前层:				u1...像素数组			<-> m x方向像素个数
+*/
+
+void upsampleDeformations2(float* u1,float* v1,float* w1,
+							float* u0,float* v0,float* w0,
+							int m,int n,int o,
+							int m2,int n2,int o2){
+
+	//当前层与 上一层(初始为[0])  的像素个数比
 	float scale_m=(float)m/(float)m2;
 	float scale_n=(float)n/(float)n2;
 	float scale_o=(float)o/(float)o2;
 	
+
+	//当前层各维度像素矩阵
 	float* x1=new float[m*n*o];
 	float* y1=new float[m*n*o];
 	float* z1=new float[m*n*o];
-	for(int k=0;k<o;k++){
-		for(int j=0;j<n;j++){
-			for(int i=0;i<m;i++){
-				x1[i+j*m+k*m*n]=j/scale_n;
+	for(int k=0;k<o;k++){			 //片	z
+		for(int j=0;j<n;j++){		//列  x
+			for(int i=0;i<m;i++){  //行  y
+				x1[i+j*m+k*m*n]=j/scale_n;   //  (j/n)*n2
 				y1[i+j*m+k*m*n]=i/scale_m;
 				z1[i+j*m+k*m*n]=k/scale_o;
 			}
 		}
 	}
-	
-	interp3(u1,u0,x1,y1,z1,m,n,o,m2,n2,o2,false);
-	interp3(v1,v0,x1,y1,z1,m,n,o,m2,n2,o2,false);
-	interp3(w1,w0,x1,y1,z1,m,n,o,m2,n2,o2,false);
+	//当前层与  上一层(初始为[0])  图像间变换...获得当前层插值结果
+	interp3(u1,u0, x1,y1,z1, m,n,o, m2,n2,o2,false);
+	interp3(v1,v0, x1,y1,z1, m,n,o, m2,n2,o2,false);
+	interp3(w1,w0, x1,y1,z1, m,n,o, m2,n2,o2,false);
 	
 	delete []x1;
 	delete []y1;
 	delete []z1;
-	
+	x1 = NULL;
+	y1 = NULL;
+	z1 = NULL;
 	//for(int i=0;i<m2*n2*o2;i++){
 	//	u2[i]*=scale_n;
 	//	v2[i]*=scale_m;

@@ -216,9 +216,15 @@ void *dataCost(void *threadarg)
 
 }
 
+/*
+	:white_check_mark: 		warpImage(warped1,im1,ux,vx,wx);   ...
+			ux为图像x维的大小...
+			
+			(总像素数据个数)...(不是  x轴/step  获得的像素个数)
+*/
 template <typename TypeW> //float
-
 void warpImage(TypeW* warped,TypeW* im1,float* u1,float* v1,float* w1){
+	//
 	int m=image_m; int n=image_n; int o=image_o; int sz=m*n*o;
 	//   :warning: warped1=new float[m*n*o];
 	interp3(warped,im1,u1,v1,w1,m,n,o,m,n,o,true);

@@ -45,37 +45,75 @@ int newEdge(Edge edge1,Edge& edgeout,bool* vertices){
 	return out1;
 }
 
-
+/*
+		:speech_balloon:		primsGraph(im1b,ordered1,parents1,step1);
+				im1:		原始图像(以fixed...为例)
+		:ballot_box_with_check:		ordered:	点排序
+				parents:	父节点
+				step:		spacing
+*/
 
 void primsGraph(float* im1,int* ordered,int* parents,int step1){
+	
+	//获得原始图像各维大小
 	int m2=image_m;
 	int n2=image_n;
 	int o2=image_o;
+
+	//获得当前层的像素数组各维大小
 	int m=m2/step1;
 	int n=n2/step1;
 	int o=o2/step1;
 	
+	//总像素数即为总共的顶点数
 	int num_vertices=m*n*o;
 	int len=m*n*o;
 	timeval time1,time2;
+
+	//邻域大小  前后..左右..上下
 	int num_neighbours=6;
+
+	//总边数
 	float* edgecost=new float[num_vertices*num_neighbours]; 
+	
+	//总边数排序
 	int* index_neighbours=new int[num_vertices*num_neighbours];
+	
+	//初始化
 	for(int i=0;i<num_vertices*num_neighbours;i++){
 		edgecost[i]=0.0;
 		index_neighbours[i]=-1;
 	}
 	
+	/*:ballot_box_with_check:
+			邻域操作掩膜mask...
+			dx:		2个邻域
+			dy:
+			dz:
+	*/
 	int dx[6]={-1,1,0,0,0,0};
 	int dy[6]={0,0,-1,1,0,0};
 	int dz[6]={0,0,0,0,-1,1};
+
 	int xx,yy,zz,xx2,yy2,zz2;
-	//calculate edge-weights based on SAD of groups of voxels (for each control-point)
-	for(int k=0;k<o;k++){
-		for(int j=0;j<n;j++){
-			for(int i=0;i<m;i++){
-				for(int nb=0;nb<num_neighbours;nb++){
-					if((i+dy[nb])>=0&(i+dy[nb])<m&(j+dx[nb])>=0&(j+dx[nb])<n&(k+dz[nb])>=0&(k+dz[nb])<o){
+	
+	/*
+			calculate edge-weights based on SAD of groups of voxels (for each control-point)
+			
+	
+	*/
+	
+	for(int k=0;k<o;k++){		//z
+		for(int j=0;j<n;j++){		//x
+			for(int i=0;i<m;i++){		//y		定控制点
+				
+				
+				for(int nb=0;nb<num_neighbours;nb++){		//定邻域
+
+
+					if((i+dy[nb])>=0&(i+dy[nb])<m&		//
+						(j+dx[nb])>=0&(j+dx[nb])<n&
+						(k+dz[nb])>=0&(k+dz[nb])<o){
 						index_neighbours[i+j*m+k*m*n+nb*num_vertices]=i+dy[nb]+(j+dx[nb])*m+(k+dz[nb])*m*n;
 						//float randv=((float)rand()/float(RAND_MAX));
 						//edgecost[i+j*m+k*m*n+nb*num_vertices]=randv;
