@@ -193,7 +193,7 @@ void *dataCost(void *threadarg)
 		
 		z1*=step1;					//该点在....原图中的位置
 		x1*=step1;
-		y1*=step1;
+		y1*=step1; 
 		
 		bool boundaries=true; //check image boundaries to save min/max computations
 		if(subpixel){
