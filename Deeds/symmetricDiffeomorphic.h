@@ -4,9 +4,11 @@
 
  /*	:speech_balloon:		函数实现3线性插值
 
-			interp3(warped,im1,   u1,v1,w1,  m,n,o,  m,n,o,true);   第[0]层与原始图像间变换
-			interp3(u1,u0, x1,y1,z1, m,n,o, m2,n2,o2,false);	    当前层 与第[0]层 间变换		
-
+			interp3(warped,im1,   u1,v1,w1,  m,n,o,  m,n,o,true);   原图与原始图像间变换
+			interp3(u1,u0, x1,y1,z1, m,n,o, m2,n2,o2,false);	    当前层(u1)m 与第[0]层(u0)m2 间变换...x1等为当前层点在上一层中的位置		
+			interp3(movingi,moving,x1,y1,z1,mi,ni,oi,m,n,o,false);   扩大了的图像与原图像 ...
+			
+			...将输出层点映射到输入层上获得相应插值
  */
  template <typename TypeI>
 void interp3(TypeI* interp,TypeI* input,
@@ -144,7 +146,11 @@ void upsampleDeformations2(float* u1,float* v1,float* w1,
 			}
 		}
 	}
-	//当前层与  上一层(初始为[0])  图像间变换...获得当前层插值结果
+	
+	/*
+		当前层u1(m)与  上一层u0(m2)(初始为[0])  图像间变换...获得当前层插值结果
+		x1、y1、z1:		为当前层坐标在上一层中的位置坐标
+	*/
 	interp3(u1,u0, x1,y1,z1, m,n,o, m2,n2,o2,false);
 	interp3(v1,v0, x1,y1,z1, m,n,o, m2,n2,o2,false);
 	interp3(w1,w0, x1,y1,z1, m,n,o, m2,n2,o2,false);

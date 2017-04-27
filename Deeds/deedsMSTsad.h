@@ -27,12 +27,19 @@ struct regulariser_data{
 };
 
 struct cost_data{
+	//  fixed   
 	float* im1;
+	// moving image
 	float* im1b;
+	// 搜索空间
 	float* costall;
+	// 参数
 	float alpha;
+	//搜索空间半径
 	int hw;
+	// spacing
 	float step1;
+	// searching-step size
 	float quant;
 	uint64_t* fixed_mind;
 	uint64_t* moving_mind;
@@ -235,7 +242,7 @@ int deeds(char* fixedin,char* movingin,char* movingsegin,char* outputstem,
 		/*	
 			:white_check_mark: warp both high-resolution images according 
 				实现3次线性插值
-				第[0]层与原始图像间变换
+				原始图与原始图像间变换
 				i	im1b	表示fixed
 				无i	im1		表示moving
 		*/	
@@ -245,7 +252,10 @@ int deeds(char* fixedin,char* movingin,char* movingsegin,char* outputstem,
 		step1=grid_step[level];   //spacing
 		hw1=label_hw[level];		//search-radius
 		
-		// pow(x,y); 用来计算x^y
+		/* 
+			pow(x,y); 用来计算x^y
+			用来表示以hw1为搜索半径的立方体体积
+		*/
 		int len3=pow(hw1*2+1,3);   //(2r+1)^3
 		m1=m/step1; n1=n/step1; o1=o/step1; sz1=m1*n1*o1;
 		/*
@@ -268,7 +278,8 @@ int deeds(char* fixedin,char* movingin,char* movingsegin,char* outputstem,
 		u1i=new float[sz1]; v1i=new float[sz1]; w1i=new float[sz1];
 		
 		/*	
-			:ballot_box_with_check:
+			:white_check_mark:  获得更新了的ordered和parents...
+				分别表示生成树搜索顺序,父节点...两个大小都是当前层控制点个数那么大
 				Minimum-spanning-tree
 				im1b	1	表示fixed
 				im1		2	表示moving
@@ -298,7 +309,10 @@ int deeds(char* fixedin,char* movingin,char* movingsegin,char* outputstem,
 		cout<<"==================================================\n";
 		gettimeofday(&time1);
 		
-		//data-cost/similarity computation 4-threaded (uses plenty of memory)
+		/*
+			data-cost/similarity computation 4-threaded (uses plenty of memory)
+			sz1*len3:	表示当前层所有控制点个数*搜索体积...即...当前层搜索空间大小
+		*/
 		float* costall1=new float[sz1*len3];
 		float* costall2=new float[sz1*len3];
 		
@@ -312,10 +326,27 @@ int deeds(char* fixedin,char* movingin,char* movingsegin,char* outputstem,
 		cosd2b.im1=im1; cosd2b.im1b=warped2; cosd2b.alpha=alpha; cosd2b.costall=costall2;
 		cosd2b.hw=hw1; cosd2b.step1=step1; cosd2b.quant=quant1; cosd2b.istart=sz1/2; cosd2b.iend=sz1;
 		
+		/*
+			pthread_create(....)
+			功能：创建线程（实际上就是确定调用该线程函数的入口点），在线程创建以后，就开始运行相关的线程函数。
+			说明：thread：			线程标识符；
+				  attr：			线程属性设置；
+				  start_routine：	即将运行的线程函数首地址；
+				  arg：				传递给start_routine的参数；
+			      返回值：			成功，返回0；出错，返回-1。
+		*/
 		pthread_create( &thread1, NULL, dataCost, (void *) &cosd1);
 		pthread_create( &thread2, NULL, dataCost, (void *) &cosd2);
 		pthread_create( &thread1b, NULL, dataCost, (void *) &cosd1b);
 		pthread_create( &thread2b, NULL, dataCost, (void *) &cosd2b);
+		/*
+			pthread_join(...)
+			功能：主线程会一直等待直到等待的线程结束自己才结束，使创建的线程有机会执行
+			参数：
+				thread：等待退出线程的线程号
+				value_ptr：退出线程的返回值
+
+		*/
 		pthread_join( thread1, NULL);
 		pthread_join( thread2, NULL);
 		pthread_join( thread1b, NULL);

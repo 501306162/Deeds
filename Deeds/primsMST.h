@@ -32,7 +32,7 @@ bool Edge::operator<(const Edge & b) const{
 /*
 	:speech_balloon:	 last=newEdge(minedge,edgeout,vertices);
 
-		函数用于指定边的顶点和终点...
+	:white_check_mark:	函数用于指定边的顶点和终点...
 		返回终点值,并修改edgeout...
 		且当边已经在最小树的边集合中时返回终点值为-1
 */
@@ -60,7 +60,7 @@ int newEdge(Edge edge1,Edge& edgeout,bool* vertices){
 /*
 		:speech_balloon:		primsGraph(im1b,ordered1,parents1,step1);
 				im1:		原始图像(以fixed...为例)
-		:ballot_box_with_check:		ordered:	点排序 (返回值)
+		:white_check_mark:		ordered:	点排序 (返回值)
 				parents:	父节点 (返回值)
 				step:		spacing
 */
@@ -338,12 +338,12 @@ void primsGraph(float* im1,int* ordered,int* parents,int step1){
 	
 	priority.clear();
 	
-	delete edgecost;
-	delete index_neighbours;
-	delete levelcount;
-	delete leveloffset;
-	delete vertices;
-	delete level;
+	delete []edgecost;
+	delete []index_neighbours;
+	delete []levelcount;
+	delete []leveloffset;
+	delete []vertices;
+	delete []level;
 	edgecost=NULL;
 	index_neighbours = NULL;
 	levelcount = NULL;
