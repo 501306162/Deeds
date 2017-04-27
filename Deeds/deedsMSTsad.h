@@ -166,10 +166,10 @@ int deeds(char* fixedin,char* movingin,char* movingsegin,char* outputstem,
 	i indicates backward (inverse) transform
 	u is in x-direction (2nd dimension), v in y-direction (1st dim) and w in z-direction (3rd dim)
 
-	   ------>x/u
+	     ------>x/u
 		|
 		|
-	  \/ y/v
+	    \/ y/v
 
 */
 	float* ux=new float[sz]; float* vx=new float[sz]; float* wx=new float[sz];
