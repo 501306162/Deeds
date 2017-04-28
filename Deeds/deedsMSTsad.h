@@ -15,7 +15,9 @@ float timeP,timeD; //global variables for comp. time
 
 //structs for multi-threading :
 struct regulariser_data{
-	float* u1; float* v1; float* w1;
+	//第[0]层
+	float* u1; float* v1; float* w1; 
+	//其他层
 	float* u0; float* v0; float* w0;
 	float* costall;
 	float alpha;
@@ -261,6 +263,7 @@ int deeds(char* fixedin,char* movingin,char* movingsegin,char* outputstem,
 		/*
 			:white_check_mark:	resize flow from u1 to current scale (grid spacing)
 				当前层与 上一层(初始为[0]) 图像间变换...获得当前层插值结果
+				给 u,v,w 更新值
 		*/
 		float* u0=new float[sz1]; float* v0=new float[sz1]; float* w0=new float[sz1];
 		float* u0i=new float[sz1]; float* v0i=new float[sz1]; float* w0i=new float[sz1];
@@ -278,7 +281,8 @@ int deeds(char* fixedin,char* movingin,char* movingsegin,char* outputstem,
 		u1i=new float[sz1]; v1i=new float[sz1]; w1i=new float[sz1];
 		
 		/*	
-			:white_check_mark:  获得更新了的ordered和parents...
+			:white_check_mark:  生成当前层 MST 结构 
+				获得更新了的ordered和parents...
 				分别表示生成树搜索顺序,父节点...两个大小都是当前层控制点个数那么大
 				Minimum-spanning-tree
 				im1b	1	表示fixed
@@ -309,9 +313,12 @@ int deeds(char* fixedin,char* movingin,char* movingsegin,char* outputstem,
 		cout<<"==================================================\n";
 		gettimeofday(&time1);
 		
-		/*
-			data-cost/similarity computation 4-threaded (uses plenty of memory)
-			sz1*len3:	表示当前层所有控制点个数*搜索体积...即...当前层搜索空间大小
+		/*		 =====================================================================================
+										:white_check_mark: 	data-cost/similarity computation
+						
+						4-threaded (uses plenty of memory)
+						sz1*len3:	表示当前层所有控制点个数*搜索体积...即...当前层搜索空间大小
+				 =====================================================================================
 		*/
 		float* costall1=new float[sz1*len3];
 		float* costall2=new float[sz1*len3];
@@ -334,6 +341,8 @@ int deeds(char* fixedin,char* movingin,char* movingsegin,char* outputstem,
 				  start_routine：	即将运行的线程函数首地址；
 				  arg：				传递给start_routine的参数；
 			      返回值：			成功，返回0；出错，返回-1。
+
+			该部分主要是为了计算原图像中各点的similarity cost...
 		*/
 		pthread_create( &thread1, NULL, dataCost, (void *) &cosd1);
 		pthread_create( &thread2, NULL, dataCost, (void *) &cosd2);
@@ -356,7 +365,16 @@ int deeds(char* fixedin,char* movingin,char* movingsegin,char* outputstem,
 		float timeData=time2.tv_sec+time2.tv_usec/1e6-(time1.tv_sec+time1.tv_usec/1e6);
 		cout<<"\nTime for data cost: "<<timeData<<"\nSpeed: "<<(float)sz1*(float)len3*(float)RAND_SAMPLES/timeData<<" dof/s\n";
 		
-		//incremental diffusion regularisation
+		/*	 =====================================================================================
+								:white_check_mark: 	incremental diffusion regularisation
+								
+								 原始图像的各维像素以及总像素
+								m...表示原始图    ux  &uxi
+								m2...表示第[0]层  u1  ...
+								m1...表示其他层   u0	...
+											
+			 =====================================================================================
+		*/
 		cout<<"Start regularisation on MST!\n";
 		cout<<"==================================================\n";
 		gettimeofday(&time1);

@@ -1,6 +1,16 @@
 
+/*
+	:speech_balloon:		ÀàËÆ¾í»ı²Ù×÷ min-convolution technique...REF:	¡¶ efficient belief propagation for early vision ¡·
+			intoduced in [12]globally optimal registration on a MST using Deeds
 
-void dt1sq(float *val,int* ind,int len,float offset,int k,int* v,float* z,float* f,int* ind1){
+	:ballot_box_with_check: 		dt1sq(r+i+k*rl*rl,   indr+i+k*rl*rl,    rl,		-dx,				rl,			    v,z,f, i1);  zoy
+			dt1sq(r+j*rl+k*rl*rl,indr+j*rl+k*rl*rl, rl,		-dy,				1,				v,z,f, i1);  zox
+			dt1sq(r+i+j*rl,      indr+i+j*rl,       rl,		-dz,				rl*rl,			v,z,f, i1);	xoy
+				
+			// xxÆ½ÃæµãµÄcostÖµ   xxÆ½ÃæindrºÅµã  2hw+1  -(¸¸×ø±ê-×Ó×ø±ê)/quant	ÓÃÀ´È·¶¨Æ½ÃæÖĞµÄµã
+*/
+void dt1sq(float *val,             int* ind,     int len,  float offset,        int k,		int* v,float* z,float* f,   int* ind1){
+	//
 	float INF=1e10;
 
 	int j=0;
@@ -8,7 +18,8 @@ void dt1sq(float *val,int* ind,int len,float offset,int k,int* v,float* z,float*
 	z[1]=INF;
 	v[0]=0;
 	for(int q=1;q<len;q++){
-		float s=((val[q*k]+pow((float)q+offset,2.0))-(val[v[j]*k]+pow((float)v[j]+offset,2.0)))/(2.0*(float)(q-v[j]));
+		//	val[q*k]:		È¡µÃxxÆ½ÃæµÄyyµãµÄcostÖµ
+		float s=((val[q*k]+pow((float)q+offset,2.0))-(val[v[j]*k]+pow((float)v[j]+offset,2.0)) ) /(2.0*(float)(q-v[j]));
 		while(s<=z[j]){
 			j--;
 			s=((val[q*k]+pow((float)q+offset,2.0))-(val[v[j]*k]+pow((float)v[j]+offset,2.0)))/(2.0*(float)(q-v[j]));
@@ -86,38 +97,54 @@ void dt4x(float* r,int* indr,int rl,int lenint,float dx,float dy,float dz,float 
 	delete []v;
 	delete []z;
 	
-	
+	i1 = NULL;
+	f = NULL;
+	v = NULL;
+	z = NULL;
 
 	
 	
 }
 
+/*
+		:speech_balloon:	 	dt3x(cost1, inds, len, dx1, dy1, dz1);
+				cost1:				 ËÑË÷¿Õ¼äµãµÄsimilarity cost
+				inds:				 ËÑË÷¿Õ¼ä±ê¼Ç¾ØÕó(Êä³ö)
+				len:				 2*hw-1
+				dx1,dy1,dz1:		(¸¸½Úµã×ø±ê-×Ó½Úµã×ø±ê)/quant
 
+		:white_check_mark:		¼ÆËã  fast distance transform
+
+*/
 
 void dt3x(float* r,int* indr,int rl,float dx,float dy,float dz){
 	//rl is length of one side
+	
+	// ËÑË÷¿Õ¼äµÄµãµÄ±êĞò
 	for(int i=0;i<rl*rl*rl;i++){
 		indr[i]=i;
 	}
-	int* v=new int[rl]; //slightly faster if not intitialised in each loop
+	//slightly faster if not intitialised in each loop
+	int* v=new int[rl]; 
 	float* z=new float[rl+1];
 	float* f=new float[rl];
 	int* i1=new int[rl];
 	
+	// ÔÚÄ³Ò»¸öÎ¬¶ÈÉÏ½øĞĞ¾í»ı´¦Àí
 	for(int k=0;k<rl;k++){
 		for(int i=0;i<rl;i++){
-			dt1sq(r+i+k*rl*rl,indr+i+k*rl*rl,rl,-dx,rl,v,z,f,i1);//);
+			dt1sq(r+i+k*rl*rl,indr+i+k*rl*rl,rl,-dx,rl,v,z,f,i1);// kÆ¬iĞĞ <-> zoyÃæ  <->xÖá);
 		}
 	}
 	for(int k=0;k<rl;k++){
 		for(int j=0;j<rl;j++){
-			dt1sq(r+j*rl+k*rl*rl,indr+j*rl+k*rl*rl,rl,-dy,1,v,z,f,i1);//);
+			dt1sq(r+j*rl+k*rl*rl,indr+j*rl+k*rl*rl,rl,-dy,1,v,z,f,i1);//kÆ¬jÁĞ <-> zoxÃæ  <->yÖá);
 		}
 	}
 	
 	for(int j=0;j<rl;j++){
 		for(int i=0;i<rl;i++){
-			dt1sq(r+i+j*rl,indr+i+j*rl,rl,-dz,rl*rl,v,z,f,i1);//);
+			dt1sq(r+i+j*rl,indr+i+j*rl,rl,-dz,rl*rl,v,z,f,i1);//iĞĞjÁĞ <-> xoyÃæ  <->zÖá);
 		}
 	}
 	delete []i1;
@@ -125,6 +152,9 @@ void dt3x(float* r,int* indr,int rl,float dx,float dy,float dz){
 
 	delete []v;
 	delete []z;
-
+	i1 = NULL;
+	f = NULL;
+	v = NULL;
+	z = NULL;
 	
 }

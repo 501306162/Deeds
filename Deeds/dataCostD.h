@@ -12,7 +12,8 @@
 
 /*
 	:speech_balloon:	 	pthread_create( &thread1, NULL, dataCost, (void *) &cosd1);
-			计算 similarity term
+
+	:white_check_mark:		计算 similarity term
 
 */
 void *dataCost(void *threadarg)
@@ -63,7 +64,7 @@ void *dataCost(void *threadarg)
 		ys:
 		zs:
 		i+j*len+k*len*len:  (2r+1)^3大小的体空间的[i][j][k]号 位移空间点  
-		(j-hw)*quant:   :thinking:如果quant为0.5...则表示  当前点位置减去半径 的一半
+		(j-hw)*quant:   :thinking:如果quant为0.5...则表示  当前点位置减去半径 的一半....获得的结果为正或负可以区分该点的搜索空间是否超出边界
 
 	*/
 	int len=hw*2+1;
@@ -112,7 +113,7 @@ void *dataCost(void *threadarg)
 				y1:									该点的y坐标的一半...
 				z1:									该点的z坐标的一半...
 
-				x1..y1...z1即表示中间moving图中的点在原始moving中的位置坐标
+				x1..y1...z1即表示中间movingi图中的点在原始moving中的位置坐标
 		*/
 		mi*=2; ni*=2; oi*=2;
 		int szi=mi*ni*oi;
@@ -162,7 +163,7 @@ void *dataCost(void *threadarg)
 	}
 		
 	int samples=RAND_SAMPLES;  // 64
-	bool randommode=samples<pow(step1,3);  // samples < (spacing^3)  ..?
+	bool randommode=samples<pow(step1,3);  // samples < (spacing^3)  ..?  :thinking:
 	
 	// maxsamp为  min{samples  ,  spacing体块体积}
 	int maxsamp;
@@ -184,10 +185,10 @@ void *dataCost(void *threadarg)
 
 	int xx2,yy2,zz2;
 	for(int i=0;i<sz1;i++){
-		if((i%frac)==0){			// 为0和frac时 输出
-			cout << "x" << flush;	//  cout<<flush表示将缓冲区的内容马上送进cout，把输出缓冲区刷新
+		if((i%frac)==0){			// 为0和k*frac时 输出
+			cout << "x" << flush;	//  cout<<flush  表示将缓冲区的内容马上送进cout，把输出缓冲区刷新
 		}
-		int z1=i/(m1*n1);           //该点在...当前层所在片
+		int z1=i/(m1*n1);           //该点在... 当前层所在片
 		int x1=(i-z1*m1*n1)/m1;		//			当前层所在列
 		int y1=i-z1*m1*n1-x1*m1;	//			当前层所在行
 		
@@ -195,43 +196,69 @@ void *dataCost(void *threadarg)
 		x1*=step1;
 		y1*=step1; 
 		
-		bool boundaries=true; //check image boundaries to save min/max computations
+
+		/*				
+				check image boundaries to save min/max computations
+				
+				中间图像movingi的 当前点位置减搜索半径....正负号区分 搜索空间 是否超出边界(负为超出)
+										    加		 ....	大于 为超出图像边界
+		*/
+
+		bool boundaries=true; 
 		if(subpixel){
-			if(x1*2+(step1-1)*2+hw2>=ni|y1*2+(step1-1)*2+hw2>=mi|z1*2+(step1-1)*2+hw2>=oi)
+			if(x1*2+(step1-1)*2+hw2>=ni|
+				y1*2+(step1-1)*2+hw2>=mi|  
+				z1*2+(step1-1)*2+hw2>=oi)
 				boundaries=false;
-			if(x1*2-hw2<0|y1*2-hw2<0|z1*2-hw2<0)
+			if(x1*2-hw2<0|				
+				y1*2-hw2<0|
+				z1*2-hw2<0)
 				boundaries=false;
 		}
-		
 		else{
-			if(x1+(step1-1)+hw2>=ni|y1+(step1-1)+hw2>=mi|z1+(step1-1)+hw2>=oi)
+			if(x1+(step1-1)+hw2>=ni|
+				y1+(step1-1)+hw2>=mi|
+				z1+(step1-1)+hw2>=oi)
 				boundaries=false;
-			if(x1-hw2<0|y1-hw2<0|z1-hw2<0)
+			if(x1-hw2<0|
+				y1-hw2<0|
+				z1-hw2<0)
 				boundaries=false;
 		}
 		
-		
+		// 搜索体空间数组初始化
 		for(int l=0;l<len4;l++){
 			cost1[l]=0.0;
 		}
 		
 		for(int j1=0;j1<maxsamp;j1++){
 			int i1;
-			if(randommode)
+			/*
+				 samples<(spacing^3)  ...?
+				 true时,    maxsamp=samples,  i1为spacing体积块内的  任意 采样点
+				 false时,   maxsamp=块体积,	  i1为spacing体积块内的  顺序 采样点	  
+			*/
+			if(randommode)    
 				//stochastic sampling for speed-up (~8x faster)
 				i1=(int)(rand()*pow(step1,3)/float(RAND_MAX));
 			else
 				i1=j1;
-			int zz=i1/(step1*step1);
+
+			int zz=i1/(step1*step1);				//采样点在spacing块体积内的坐标
 			int xx=(i1-zz*step1*step1)/step1;
 			int yy=i1-zz*step1*step1-xx*step1;
 			
-			xx+=x1;
+			xx+=x1;									//采样点 在原图内 的坐标
 			yy+=y1;
 			zz+=z1;
 
 			for(int l=0;l<len4;l++){
-				if(!(boundaries)){
+				/*
+					 如果采样点 搜索空间 超出边界时...将搜索位置设为  当前采样点的搜索空间边界位置
+
+										   未超出时...即为中间图movingi中   正常搜索位置
+				*/
+				if(!(boundaries)){      
 					if(subpixel){
 						xx2=max(min(xx*2+(int)xs[l],ni-1),0);
 						yy2=max(min(yy*2+(int)ys[l],mi-1),0);
@@ -243,7 +270,7 @@ void *dataCost(void *threadarg)
 						zz2=max(min(zz+(int)(zs[l]),oi-1),0);
 					}
 				}
-				else{
+				else{					
 					if(subpixel){
 						xx2=xx*2+(int)xs[l];
 						yy2=yy*2+(int)ys[l];
@@ -255,12 +282,19 @@ void *dataCost(void *threadarg)
 						zz2=zz+(int)zs[l];
 					}
 				}
-				//point-wise similarity term (replace if needed, e.g. with pow( ,2.0)
+				/*
+					point-wise similarity term (replace if needed, e.g. with pow( ,2.0)	
+
+					整个sapcing体积块中所有采样点  的 所有搜索空间点的 similarity cost 之和   ...
+				*/
 				cost1[l]+=fabs(fixed[yy+xx*m+zz*m*n]-movingi[yy2+xx2*mi+zz2*mi*ni]);
 
 			}
 		}
-		
+		/*
+			i+l*sz1:	表示原图中第i个点,第l个搜索位置
+			costall:	表示该搜索位置 处理后的similarity cost     
+		*/
 		for(int l=0;l<len4;l++){
 			costall[i+l*sz1]=alpha2*cost1[l];
 		}
